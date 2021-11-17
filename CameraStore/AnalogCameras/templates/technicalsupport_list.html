@@ -1,0 +1,74 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addTechnicalSupport()"> Add Technical Support</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Address</th>
+          <th>Camera</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in allData' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.address }$</td>
+          <td>${ item.fields.camera.mark }$</td>
+          <td>
+            <button class="btn btn-secondary" @click="editTechnicalSupport(item.pk)">Edit TechnicalSupport</button>
+            <button class="btn btn-danger" @click="deleteTechnicalSupport(item.pk)">Delete TechnicalSupport</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script>
+  vueList = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        allData: {}
+      }
+    },
+    mounted() {
+      this.getTechnicalSupportList()
+    },
+    methods: {
+      async getTechnicalSupportList() {
+        url = "/api/technicalsupport/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        this.allData = responseAsJson.TechnicalSupport
+      },
+      addTechnicalSupport() {
+        url = "/technicalsupport/add/"
+        window.location.replace(url)
+      },
+      editTechnicalSupport(id) {
+        url = `/technicalsupport/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteTechnicalSupport(id) {
+        url = `/technicalsupport/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}

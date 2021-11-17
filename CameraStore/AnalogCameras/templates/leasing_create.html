@@ -1,0 +1,124 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div id="allBody">
+        <div class="register-logo">
+            <b>Create Leasing</b>
+        </div>
+        <div class="card">
+            <div class="card-body register-card-body">
+                <p class="login-box-msg">New Register</p>
+                <form @submit.prevent="createLeasing()">
+                    Client
+                    <div class="input-group mb-8">
+                        <!-- <input type="text" class="form-control" placeholder="Client " v-model="data.mark" required> -->
+                        <select class="form-control" v-model="data.client" required>
+                            <option disabled value="">Select a choice</option>
+                            <option :value="choice.pk" v-for="choice in dataClient">${ choice.fields.name}$</option>
+                        </select>
+                    </div>
+                    Item Reference Camera
+                    <div class="input-group mb-8">
+                        <!-- <input type="text" class="form-control" placeholder="Item Camera" v-model="data.model"
+                                required> -->
+                        <select class="form-control" v-model="data.itemscamera" required>
+                            <option disabled value="">Select a choice</option>
+                            <option :value="choice.pk" v-for="choice in dataItemsCamera">${ choice.fields.reference }$</option>
+                        </select>
+                        <select class="form-control" v-model="data.itemscamera" required>
+                            <option disabled value="">Select a choice</option>
+                            <option :value="choice.pk" v-for="choice in dataItemsCamera">${ choice.fields.camera.mark}$</option>
+                        </select>
+                        <select class="form-control" v-model="data.itemscamera" required>
+                            <option disabled value="">Select a choice</option>
+                            <option :value="choice.pk" v-for="choice in dataItemsCamera">${ choice.fields.model.model}$</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button class="btn btn-primary btn-block">Create Register</button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <button class="btn btn-primary btn-block" @click="listRegister()">List Registers</button>
+            </div>
+        </div>
+        <!-- /.form-box -->
+    </div>
+</div>
+
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<!-- SweetAlert2 -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js" type="text/javascript"></script>
+<!--Own JS -->
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/soso/show_alert.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script>
+    vueCreateLeasing = new Vue({
+        delimiters: ['${', '}$'],
+        el: '#allBody',
+        data() {
+            return {
+                data: {
+                    itemscamera: "",
+                    client: "",
+                    date: "",
+                    expiration_date: ""
+                },
+                dataItemsCamera: {},
+                dataClient: {}
+            }
+        },
+        mounted() {
+            this.getAllData()
+        },
+        methods: {
+            createLeasing: async function () {
+                let today = new Date();
+                this.data.date = moment(today).format("YYYY-MM-DD")
+                this.data.expiration_date = moment().add(7, 'days').format("YYYY-MM-DD");
+                let data = JSON.stringify(this.data)
+                console.log(data);
+                let url = `/api/leasing/new/`;
+                console.log(data);
+                let response = await request_post(url, data);
+                console.log(response);
+                let responseAsJson = await response.json();
+                console.log(responseAsJson);
+                if (response.ok) {
+                    result = await show_message("success", responseAsJson.message)
+                    if (result.value == true) {
+                        window.location.replace("/leasing/list/")
+                    }
+                } else {
+                    result = await show_message("error", responseAsJson.message)
+                }
+
+            },
+            listRegister() {
+                url = "/leasing/list/"
+                window.location.replace(url)
+            },
+            async getAllData() {
+                url = "/api/itemscamera/all/"
+                let response = await request_get(url);
+                let responseAsJson = await response.json()
+                console.log(responseAsJson);
+                this.dataItemsCamera = responseAsJson.ItemsCamera
+                url = "/api/client/all/"
+                response = await request_get(url);
+                responseAsJson = await response.json()
+                console.log(responseAsJson);
+                this.dataClient = responseAsJson.Client
+            }
+        }
+
+    })
+</script>
+{% endblock %}

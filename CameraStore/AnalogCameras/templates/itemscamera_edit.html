@@ -1,0 +1,110 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-2">
+    </div>
+    <div class="col-sm-8">
+      <div  id="allBody">
+        <div class="register-logo">
+          <b>Edit Item for Camera</b>
+        </div>
+        <div class="card">
+          <div class="card-body register-card-body">
+            <p class="login-box-msg">Edit Register</p>
+    
+            <form @submit.prevent="editItemsCamera()">
+              <div v-for="(item,index) in data">
+                Reference
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" placeholder="Mark" v-model="item.fields.reference" required>
+                </div>
+                Mark and Model Camera
+                <div class="input-group mb-3">
+                  <!-- <select class="form-control" v-model="item.fields.camera.mark" required>
+                    <option disabled>${ item.fields.formatFilm}$</option>
+                    <option :value="choice" v-for="choice in formatFilmChoices">${ choice }$</option>
+                  </select> -->
+                  <input disabled type="text" class="form-control" placeholder="Mark Camera" v-model="item.fields.camera.mark" required>
+                  <input disabled type="text" class="form-control" placeholder="Mark" v-model="item.fields.model.model" required>
+                </div>
+                Status
+                <div class="input-group mb-3">
+                  <select class="form-control" v-model="item.fields.status" required>
+                    <option disabled>${ item.fields.status}$</option>
+                    <option :value="choice" v-for="choice in statusChoices">${ choice }$</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <button class="btn btn-secondary btn-block">Update Register</button>
+              </div>
+            </form>
+    
+            <button class="btn btn-primary btn-block" @click="listRegister()">List Registers</button>
+    
+          </div>
+    
+        </div>
+      </div>
+    
+    </div>
+    <div class="col-sm-2">
+    </div>
+  </div>
+
+</div>
+
+
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js" type="text/javascript"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/soso/show_alert.js"></script>
+<script>
+  'use strict';
+  let vueEdit = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#allBody',
+    mounted() {
+      this.pk = window.location.pathname.split('/')[2];
+      this.getRegister()
+    },
+    data() {
+      return {
+        data: {},
+        pk: "",
+        statusChoices: ["On Store", "Rented", "Delayed", "Repair"]
+      }
+    },
+    methods: {
+      editItemsCamera: async function () {
+        let form_data = JSON.stringify(this.data)
+        let url = `/api/itemscamera/${this.pk}/`
+        var response = await request_put(url, form_data);
+        let responseAsJson = await response.json();
+        console.log(responseAsJson);
+        if (response.ok) {
+          let result = await show_message("success", "Register Updated Succesfully")
+          console.log(result);
+          if (result.value == true) {
+            window.location.replace("/itemscamera/list/")
+          }
+        }
+      },
+      listRegister() {
+        window.location.replace("/itemscamera/list/");
+      },
+      async getRegister() {
+        let get_data = await request_get(`/api/itemscamera/${this.pk}/`);
+        let responseAsJson = await get_data.json();
+        this.data = responseAsJson.ItemsCamera;
+        console.log(responseAsJson);
+
+      }
+    },
+  })
+</script>
+{% endblock %}

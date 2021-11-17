@@ -1,0 +1,79 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addFilmCamera()"> Add Film Camera</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Mark Film</th>
+          <th>Sensibility</th>
+          <th>Format Film</th>
+          <th>Mark Camera</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in allData' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.markFilm }$</td>
+          <td>${ item.fields.sensibility }$</td>
+          <td>${ item.fields.formatFilm }$</td>
+          <td>${ item.fields.camera.mark }$</td>
+          <td>
+            <button class="btn btn-secondary" @click="editFilmCamera(item.pk)">Edit Film Camera</button>
+            <button class="btn btn-danger" @click="deleteFilmCamera(item.pk)">Delete Film Camera</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script>
+  vueFilmCameraList = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        allData: {}
+      }
+    },
+    mounted() {
+      this.getFilmCameraList()
+    },
+    methods: {
+      async getFilmCameraList() {
+        url = "/api/filmcamera/all/"
+        let response = await request_get(url);
+        let responseAsJson=await response.json()
+        this.allData = responseAsJson.FilmCamera
+        console.log(this.allData);
+      },
+      addFilmCamera() {
+        url = "/filmcamera/add/"
+        window.location.replace(url)
+      },
+      editFilmCamera(id) {
+        url = `/filmcamera/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteFilmCamera(id) {
+        url = `/filmcamera/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}

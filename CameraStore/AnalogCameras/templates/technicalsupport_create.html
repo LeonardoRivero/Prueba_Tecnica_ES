@@ -1,0 +1,97 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-2">
+        </div>
+        <div class="col-sm-8">
+            <div id="allBody">
+                <div class="register-logo">
+                    <b>Create Address for Technical Support</b>
+                </div>
+                <div class="card">
+                    <div class="card-body register-card-body">
+                        <p class="login-box-msg">New Register</p>
+                        <form @submit.prevent="createTechnicalSupport()">
+                            Address Technical Support
+                            <div class="input-group mb-8">
+                                <input type="text" class="form-control" placeholder="Address Technical Support " v-model="data.address" required>
+                            </div>
+                            Mark Camera
+                            <div class="input-group mb-8">
+                                <select class="form-control" v-model="data.camera" required>
+                                    <option disabled value="">Select a choice</option>
+                                    <option :value="choice.pk" v-for="choice in cameraChoices">${ choice.fields.mark }$</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary btn-block">Create Register</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-block" @click="listRegister()">List Registers</button>
+                    </div>
+                </div>
+                <!-- /.form-box -->
+            </div>
+        </div>
+        <div class="col-sm-2">
+        </div>
+    </div>
+
+</div>
+
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<!-- SweetAlert2 -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js" type="text/javascript"></script>
+<!--Own JS -->
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/soso/show_alert.js"></script>
+<!-- <script src="/static/plugins/soso/apiCamera.js"></script> -->
+<script>
+    vueCreate = new Vue({
+        delimiters: ['${', '}$'],
+        el: '#allBody',
+        data() {
+            return {
+                data: {
+                    address: "",
+                    camera: ""
+                },
+                cameraChoices: ""
+            }
+        },
+        mounted() {
+            this.getAllCamera()
+        },
+        methods: {
+            createTechnicalSupport: async function () {
+                let data = JSON.stringify(this.data)
+                console.log(data, "data to send");
+                let url = `/api/technicalsupport/new/`;
+                let response = await request_post(url, data);
+                let responseAsJson = await response.json();
+                console.log(responseAsJson.message);
+                if (response.ok) {
+                    result = await show_message("success", responseAsJson.message)
+                    if (result.value == true) {
+                        window.location.replace("/technicalsupport/list/")
+                    }
+                } else {
+                    result = await show_message("error", "Already Address Technical Support existing")
+                }
+            },
+            async getAllCamera() {
+                url = "/api/camera/all/"
+                let response = await request_get(url);
+                let responseAsJson = await response.json()
+                this.cameraChoices = responseAsJson.Camera
+            },
+        }
+    })
+</script>
+{% endblock %}

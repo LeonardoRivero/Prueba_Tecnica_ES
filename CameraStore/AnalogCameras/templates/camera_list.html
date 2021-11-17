@@ -1,0 +1,89 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addCamera()"> Add Camera</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Mark Camera</th>
+          <th>Model</th>
+          <th>Holder</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in dataModelCamera' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.camera.mark }$</td>
+          <td>${ item.fields.model }$</td>
+          <td>${ item.fields.holderFlash }$</td>
+          <td>
+            <button class="btn btn-secondary" @click="editCamera(item.pk)">Edit Register</button>
+            <button class="btn btn-danger" @click="deleteCamera(item.fields.camera.id)">Delete Register</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/soso/apiCamera.js"></script>
+<script>
+  vueListCamera = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        dataCamera: {},
+        dataModelCamera: {}
+      }
+    },
+    mounted() {
+      this.getCameraList()
+      this.getModelCameraList()
+      // getAllCameras()
+    },
+    methods: {
+      async getCameraList() {
+        url = "/api/camera/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        this.dataCamera = responseAsJson.Camera
+        console.log(this.dataCamera);
+      },
+      async getModelCameraList() {
+        url = "/api/modelcamera/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        console.log(responseAsJson);
+        this.dataModelCamera = responseAsJson.ModelCamera
+
+      },
+      addCamera() {
+        url = "/camera/add/"
+        window.location.replace(url)
+      },
+      editCamera(id) {
+        url = `/camera/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteCamera(id) {
+        url = `/camera/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}

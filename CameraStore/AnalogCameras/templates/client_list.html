@@ -1,0 +1,108 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addClient()"> Add Client</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Status CLient</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in allData' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.name}$</td>
+          <td>${ item.fields.phone }$</td>
+          <td>
+            <div v-if="item.fields.punishment">
+              <button class="btn btn-danger">Punishment</button>
+            </div>
+            <div v-else>
+              <button class="btn btn-success">Available</button>
+            </div>
+          </td>
+          <td>
+            <button class="btn btn-secondary" @click="editClient( item.pk)">Edit Register</button>
+            <!-- <button class="btn btn-danger" @click="deleteClient( item.pk)">Delete Register</button> -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script>
+  vueList = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        allData: {}
+      }
+    },
+    mounted() {
+      this.getClientList()
+    },
+    methods: {
+      async getClientList() {
+        let today = new Date();
+        url = "/api/leasing/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        console.log(responseAsJson);
+
+        for (let item of responseAsJson.Leasing) {
+          let expirationDate = moment(item.fields.expiration_date);
+          let diff = expirationDate.diff(today, 'days')
+          console.log(diff);
+
+          if (diff <= 0 && item.fields.camera_returned === false) {
+            item.fields.client.punishment = true
+          } else {
+            item.fields.client.punishment = false
+          }
+
+          url = `/api/leasing/all/`
+          let data = JSON.stringify(responseAsJson.Leasing)
+          console.log(data);
+          response = await request_put(url, data);
+        }
+
+        url = "/api/client/all/"
+        response = await request_get(url);
+        responseAsJson = await response.json()
+        this.allData = responseAsJson.Client
+
+      },
+      addClient() {
+        url = "/client/add/"
+        window.location.replace(url)
+      },
+      editClient(id) {
+        url = `/client/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteClient(id) {
+        url = `/client/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}

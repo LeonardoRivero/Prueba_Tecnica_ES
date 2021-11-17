@@ -1,0 +1,9 @@
+/* ubuntu-regular - latin */
+
+@font-face {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../webfonts/ubuntu-v15-latin-regular.ttf') format('truetype')
+   
+}

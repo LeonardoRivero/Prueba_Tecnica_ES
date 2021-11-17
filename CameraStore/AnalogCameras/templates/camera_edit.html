@@ -1,0 +1,116 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container-fluid" id="allBody">
+  <div class="row">
+    <div class="col-sm-2">
+    </div>
+    <div class="col-sm-8">
+      <div class="register-logo" >
+        <b>Edit Camera</b>
+      </div>
+      <div class="card">
+        <div class="card-body register-card-body">
+          <p class="login-box-msg">Edit Register Camera</p>
+  
+          <form @submit.prevent="editCamera()">
+            <div v-for="(item,index) in dataCamera">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Mark" v-model="item.fields.mark" required>
+              </div>
+            </div>
+            <div v-for="(item,index) in dataModelCamera">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Model" v-model="item.fields.model" required>
+              </div>
+              <div class="input-group mb-8">
+                <select class="form-control" v-model="item.fields.holderFlash" required>
+                  <option disabled>${item.fields.holderFlash}$</option>
+                  <option>True</option>
+                  <option>False</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-block">Update Register</button>
+            </div>
+          </form>
+          <button class="btn btn-primary btn-block" @click="listRegister()">List Registers</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-2">
+    </div>
+  </div>
+    
+
+</div>
+
+
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js" type="text/javascript"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/soso/show_alert.js"></script>
+<script>
+  'use strict';
+  let vueEdit = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#allBody',
+    mounted() {
+      this.pkModelCamera = window.location.pathname.split('/')[2];
+      this.getRegister()
+    },
+    data() {
+      return {
+        dataModelCamera: {},
+        dataCamera: {},
+        pkModelCamera: "",
+        idCamera: ""
+      }
+    },
+    methods: {
+      editCamera: async function () {
+        let data = JSON.stringify(this.dataCamera)
+        let url = `/api/camera/${this.idCamera}/`
+        let response = await request_put(url, data);
+        let responseAsJson = await response.json();
+
+        if (response.ok) {
+          data = JSON.stringify(this.dataModelCamera)
+          url = `/api/modelcamera/${this.pkModelCamera}/`
+          response = await request_put(url, data);
+          responseAsJson = await response.json();
+
+          if (response.ok) {
+            let result = await show_message("success", "Camera Updated Succesfully")
+            if (result.value == true) {
+              window.location.replace("/camera/list/")
+            } else {
+              result = await show_message("error", responseAsJson.message)
+            }
+          }
+        }
+      },
+      listRegister() {
+        window.location.replace("/camera/list/");
+      },
+      async getRegister() {
+        let data = await request_get(`/api/modelcamera/${this.pkModelCamera}/`);
+        let responseAsJson = await data.json();
+        this.dataModelCamera = responseAsJson.ModelCamera;
+
+        for (let element of this.dataModelCamera) {
+          this.idCamera = element.fields.camera.id
+        }
+
+        data = await request_get(`/api/camera/${this.idCamera}/`);
+        responseAsJson = await data.json();
+        this.dataCamera = responseAsJson.Camera;
+      }
+    },
+  })
+</script>
+{% endblock %}

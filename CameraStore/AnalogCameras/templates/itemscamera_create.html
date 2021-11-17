@@ -1,0 +1,139 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-2">
+        </div>
+        <div class="col-sm-8" id="allBody">
+            <div class="register-logo">
+                <b>Create Items for Camera</b>
+            </div>
+            <div class="card">
+                <div class="card-body register-card-body">
+                    <p class="login-box-msg">New Register</p>
+                    <form @submit.prevent="createItemsCamera()">
+                        Reference
+                        <div class="input-group mb-8">
+                            <input type="text" class="form-control" placeholder="Reference about Item " v-model="data.reference" required>
+                        </div>
+                        Camera
+                        <div class="input-group mb-8">
+                            <!-- <select class="form-control" v-model="selectedCamera" required>
+                                <option disabled value="">Select a choice</option>
+                                <option :value="choice.pk" v-for="choice in cameraChoices">${ choice.fields.mark}$
+                                </option>
+                            </select> -->
+                            <select class="form-control" v-model="data.model" required>
+                                <option disabled value="">Select a choice</option>
+                                <option :value="choice.pk" v-for="choice in modelCameraChoices">${ choice.fields.camera.mark}$--${ choice.fields.model }$
+                                </option>
+                            </select>
+                        </div>
+                        Status
+                        <div class="input-group mb-8">
+                            <select class="form-control" v-model="data.status" required>
+                                <option disabled value="">Seleccione un elemento</option>
+                                <option :value="choice" v-for="choice in statusChoices">${ choice }$</option>
+                                <!-- <option>On Store</option>
+                                <option>Rented</option>
+                                <option>Delayed</option>
+                                <option>Repair</option> -->
+                            </select>
+                        </div>
+                        <div class="col text-right">
+                            <button class="btn btn-primary">Create Item for Camera</button>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-block" @click="listRegister()">List Registers</button>
+                </div>
+            </div>
+            <!-- /.form-box -->
+        </div>
+        <div class="col-sm-2">
+        </div>
+    </div>
+</div>
+
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<!-- SweetAlert2 -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js" type="text/javascript"></script>
+<!--Own JS -->
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/soso/show_alert.js"></script>
+<script>
+    vueCreate = new Vue({
+        delimiters: ['${', '}$'],
+        el: '#allBody',
+        data() {
+            return {
+                data: {
+                    reference: "",
+                    camera: "",
+                    status: "",
+                    model: ""
+                },
+                cameraChoices: "",
+                modelCameraChoices: "",
+                statusChoices: ["On Store", "Rented", "Delayed", "Repair"],
+                selectedCamera: ""
+            }
+        },
+        mounted() {
+            this.getModelCameraList()
+            this.getCameraList()
+
+        },
+        methods: {
+            async getCameraList() {
+                url = "/api/camera/all/"
+                let response = await request_get(url);
+                let responseAsJson = await response.json()
+                this.cameraChoices = responseAsJson.Camera
+            },
+            async getModelCameraList() {
+                url = "/api/modelcamera/all/"
+                let response = await request_get(url);
+                let responseAsJson = await response.json()
+                this.modelCameraChoices = responseAsJson.ModelCamera
+            },
+            createItemsCamera: async function () {
+                let data = JSON.stringify(this.data)
+                let url = `/api/itemscamera/new/`;
+                let response = await request_post(url, data);
+                let responseAsJson = await response.json();
+                console.log(responseAsJson);
+                if (response.ok) {
+                    result = await show_message("success", "Register Succesfully")
+                    if (result.value == true) {
+                        window.location.replace("/itemscamera/list/")
+                    }
+                }
+            },
+            listRegister() {
+                url = "/itemscamera/list/"
+                window.location.replace(url)
+            },
+        },
+        watch: {
+            data: {
+                handler: function (value, oldVal) {
+                    let pkModelCamera = value.model
+                    for (let element of this.modelCameraChoices) {
+                        if (pkModelCamera === element.pk) {
+                            this.data.camera = element.fields.camera.id
+                        }
+
+                    }
+                },
+                deep: true
+            },
+        }
+    })
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addLeasing()"> Add Leasing</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name Client</th>
+          <th>Reference Camera</th>
+          <th>Date Leasing</th>
+          <th>Expiration Date</th>
+          <th>Status Leasing</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in allData' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.client.name }$</th>
+          <td>${ item.fields.itemscamera.reference }$</td>
+          <td>${ item.fields.date }$</td>
+          <td>${ item.fields.expiration_date }$</td>
+          <td>
+            <div v-if="item.fields.client.punishment">
+              <button class="btn btn-danger">Punishment ${month_punishment}$ Months</button>
+            </div>
+            <div v-else>
+              <button class="btn btn-success">On Time</button>
+            </div>
+          </td>
+          <td>
+            <button class="btn btn-secondary" @click="editLeasing(item.pk)">Edit Register</button>
+            <button class="btn btn-danger" @click="deleteLeasing(item.pk)">Delete Register</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/soso/apiCamera.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script>
+  vueList = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        allData: {},
+        month_punishment: {}
+      }
+    },
+    mounted() {
+      this.getLeasingList()
+      // getAllCameras()
+    },
+    methods: {
+      async getLeasingList() {
+        let today = new Date();
+        today = moment(today).format("YYYY-MM-DD")
+        console.log(today);
+
+        url = "/api/leasing/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        this.allData = responseAsJson.Leasing
+
+        for (let item of this.allData) {
+          let expirationDate = moment(item.fields.expiration_date);
+          this.month_punishment = expirationDate.diff(today, 'days')
+
+          if (this.month_punishment <= 0 && item.fields.camera_returned === false) {
+            item.fields.client.punishment = true
+            this.month_punishment = this.month_punishment * (-1)
+          } else {
+            item.fields.client.punishment = false
+          }
+        }
+        url = `/api/leasing/all/`
+        let data = JSON.stringify(this.allData)
+        response = await request_put(url, data);
+        console.log(this.allData);
+      },
+      addLeasing() {
+        url = "/leasing/add/"
+        window.location.replace(url)
+      },
+      editLeasing(id) {
+        url = `/leasing/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteLeasing(id) {
+        url = `/leasing/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}

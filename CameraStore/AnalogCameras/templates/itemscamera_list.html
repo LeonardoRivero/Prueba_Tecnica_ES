@@ -1,0 +1,79 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="blockContent">
+  <div class="container-fluid">
+    <div>
+      <button class="btn btn-primary btn-block" @click="addItemsCamera()"> Add Items Camera</button>
+    </div>
+    <table id="tableListUser" class="table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Mark Camera</th>
+          <th>Reference</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for='(item, index) in allData' :key="index">
+          <td>${ item.pk }$</td>
+          <td>${ item.fields.camera.mark }$</td>
+          <td>${ item.fields.reference }$</td>
+          <td>${ item.fields.status }$</td>
+          <td>
+            <button class="btn btn-secondary" @click="editItemsCamera(item.pk)">Edit Register</button>
+            <button class="btn btn-danger" @click="deleteItemsCamera(item.pk)">Delete Register</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<script src="/static/plugins/soso/request.js"></script>
+<script src="/static/plugins/vue/vue.js"></script>
+<script src="/static/plugins/soso/apiCamera.js"></script>
+<script>
+  vueList = new Vue({
+    delimiters: ['${', '}$'],
+    el: '#blockContent',
+    data() {
+      return {
+        allData: {}
+      }
+    },
+    mounted() {
+      this.getCameraList()
+      // getAllCameras()
+    },
+    methods: {
+      async getCameraList() {
+        url = "/api/itemscamera/all/"
+        let response = await request_get(url);
+        let responseAsJson = await response.json()
+        console.log(responseAsJson);
+        this.allData=responseAsJson.ItemsCamera
+      },
+      addItemsCamera() {
+        url = "/itemscamera/add/"
+        window.location.replace(url)
+      },
+      editItemsCamera(id) {
+        url = `/itemscamera/${id}/edit/`
+        window.location.replace(url)
+      },
+      deleteItemsCamera(id) {
+        url = `/itemscamera/${id}/delete/`
+        window.location.replace(url)
+      }
+    }
+  })
+</script>
+
+{% endblock %}
